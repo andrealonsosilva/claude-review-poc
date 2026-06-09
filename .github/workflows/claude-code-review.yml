@@ -41,12 +41,15 @@ jobs:
             Review pull request #${{ github.event.pull_request.number }} in the repository ${{ github.repository }}.
 
             Steps:
-            1. Run `gh pr diff ${{ github.event.pull_request.number }}` to see the changes.
+            1. Run `gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }}` to see the changes.
             2. Review the diff for bugs, security issues, and bad practices.
             3. You MUST always post your review as a PR comment using:
-               `gh pr comment ${{ github.event.pull_request.number }} --body "<your review>"`
+               `gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "<your review>"`
+            4. You must use in line comments to point out specific lines of code that have issues, and you can also leave a general comment summarizing your review.
             Always post a comment, even if the only finding is that the code looks fine.
             Do not skip the PR for being simple, automated, or already reviewed — always review and always comment.
+            
+
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
 
