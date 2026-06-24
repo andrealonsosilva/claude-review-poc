@@ -37,6 +37,28 @@ jobs:
           role-to-assume: arn:aws:iam::505474665010:role/gvp-code-review-role
           aws-region: us-east-1
 
+      # TEMPORARY DIAGNOSTIC: surface the raw Bedrock error the SDK hides.
+      # Calls invoke-model directly under the assumed role for both model IDs.
+      # Remove this step once the review works.
+      - name: Diagnose Bedrock access
+        continue-on-error: true
+        run: |
+          echo "::group::caller identity"
+          aws sts get-caller-identity || true
+          echo "::endgroup::"
+          for MODEL in "us.anthropic.claude-sonnet-4-6" "us.anthropic.claude-haiku-4-5-20251001"; do
+            echo "::group::invoke-model $MODEL"
+            aws bedrock-runtime invoke-model \
+              --region us-east-1 \
+              --model-id "$MODEL" \
+              --content-type application/json \
+              --accept application/json \
+              --cli-binary-format raw-in-base64-out \
+              --body '{"anthropic_version":"bedrock-2023-05-31","max_tokens":16,"messages":[{"role":"user","content":"ping"}]}' \
+              /tmp/bedrock-out.json && echo "OK: $MODEL" && cat /tmp/bedrock-out.json
+            echo "::endgroup::"
+          done
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
