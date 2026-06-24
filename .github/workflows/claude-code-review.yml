@@ -27,6 +27,7 @@ jobs:
           use_bedrock: "true"
           claude_args: |
             --model us.anthropic.claude-haiku-4-5-20251001-v1:0
+            --allowedTools Bash(gh:*),Edit,Write,View
           prompt: |
             Review pull request #${{ github.event.pull_request.number }} in the repository ${{ github.repository }}.
 
