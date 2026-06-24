@@ -22,7 +22,7 @@ jobs:
           aws-region: us-east-1   # region where you enabled Bedrock
 
       - name: Run Claude review
-        uses: anthropics/claude-code-action@beta
+        uses: anthropics/claude-code-action@v1
         with:
           use_bedrock: "true"
           model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # a Bedrock inference-profile ID
