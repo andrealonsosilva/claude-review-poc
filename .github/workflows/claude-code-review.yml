@@ -31,9 +31,21 @@ jobs:
         with:
           fetch-depth: 1
 
+      - name: Configure AWS credentials (OIDC)
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::505474665010:role/gvp-code-review-role
+          aws-region: us-east-1
+
       - name: Run Claude Code Review
         id: claude-review
         uses: anthropics/claude-code-action@v1
+        env:
+          CLAUDE_CODE_USE_BEDROCK: "1"
+          # Bedrock inference-profile IDs — confirm the exact IDs available in your region
+          # (Bedrock console → Inference / Cross-region inference profiles).
+          ANTHROPIC_MODEL: us.anthropic.claude-sonnet-4-6
+          ANTHROPIC_SMALL_FAST_MODEL: us.anthropic.claude-haiku-4-5-20251001
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
           claude_args: '--allowed-tools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh api:*)"'
