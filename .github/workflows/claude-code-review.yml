@@ -25,12 +25,7 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           use_bedrock: "true"
-          model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # a Bedrock inference-profile ID
-          prompt: |
-            Review the diff and leave inline comments on the PR
-            Always leave feedback on the PR. Do not skip the PR for being simple, automated, or already reviewed — always review and always comment.
-
-
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-
+          claude_args: |
+            --model us.anthropic.claude-haiku-4-5-20251001-v1:0
+            --allowedTools Bash(gh:*),Edit,Write,View
+          prompt: "Review the diff and leave inline comments on the PR. Always leave feedback on the PR. Do not skip the PR for being simple, automated, or already reviewed — always review and always comment"
