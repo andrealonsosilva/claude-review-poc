@@ -47,7 +47,11 @@ jobs:
           ANTHROPIC_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
           ANTHROPIC_SMALL_FAST_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
         with:
-          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          # Use the action's first-class Bedrock support (OIDC -> IAM role for auth).
+          # Do NOT pass claude_code_oauth_token here: it switches the action to the
+          # Anthropic-API auth path, which conflicts with Bedrock and makes the first
+          # model call fail (is_error on turn 1, no review posted).
+          use_bedrock: "true"
           claude_args: '--allowed-tools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh api:*)"'
           prompt: |
             Review pull request #${{ github.event.pull_request.number }} in the repository ${{ github.repository }}.
