@@ -35,18 +35,7 @@ jobs:
             3. Get the head commit SHA of the PR (you will need it to anchor inline comments):
                `gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json headRefOid -q .headRefOid`
             4. Post your review as a single PR review with INLINE comments anchored to the
-               exact file and line of each issue. Build a JSON payload and submit it with the
-               GitHub reviews API. Write the payload to a file first, then run:
-               `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews --method POST --input payload.json`
-               The payload must have this shape:
-                 {
-                   "commit_id": "<head SHA from step 3>",
-                   "event": "COMMENT",
-                   "body": "<short summary of the review>",
-                   "comments": [
-                     { "path": "<file path>", "line": <line number in the new file>, "side": "RIGHT", "body": "<the issue>" }
-                   ]
-                 }
+               exact file and line of each issue.
                Add one entry to "comments" for every issue you found, each anchored to the
                specific changed line it refers to. Only reference lines that appear in the diff.
             5. If you found NO issues, skip the inline comments and instead post a single
