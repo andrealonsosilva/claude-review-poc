@@ -1,0 +1,70 @@
+name: Claude Code Review
+
+on:
+  pull_request:
+    types: [opened, synchronize, ready_for_review, reopened]
+    # Optional: Only run on specific file changes
+    # paths:
+    #   - "src/**/*.ts"
+    #   - "src/**/*.tsx"
+    #   - "src/**/*.js"
+    #   - "src/**/*.jsx"
+
+jobs:
+  claude-review:
+    # Optional: Filter by PR author
+    # if: |
+    #   github.event.pull_request.user.login == 'external-contributor' ||
+    #   github.event.pull_request.user.login == 'new-developer' ||
+    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
+
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
+      issues: read
+      id-token: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+
+      - name: Run Claude Code Review
+        id: claude-review
+        uses: anthropics/claude-code-action@v1
+        with:
+          claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          claude_args: '--allowed-tools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh api:*)"'
+          prompt: |
+            Review pull request #${{ github.event.pull_request.number }} in the repository ${{ github.repository }}.
+
+            Steps:
+            1. Run `gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }}` to see the changes.
+            2. Review the diff for bugs, security issues, and bad practices.
+            3. Get the head commit SHA of the PR (you will need it to anchor inline comments):
+               `gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json headRefOid -q .headRefOid`
+            4. Post your review as a single PR review with INLINE comments anchored to the
+               exact file and line of each issue. Build a JSON payload and submit it with the
+               GitHub reviews API. Write the payload to a file first, then run:
+               `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews --method POST --input payload.json`
+               The payload must have this shape:
+                 {
+                   "commit_id": "<head SHA from step 3>",
+                   "event": "COMMENT",
+                   "body": "<short summary of the review>",
+                   "comments": [
+                     { "path": "<file path>", "line": <line number in the new file>, "side": "RIGHT", "body": "<the issue>" }
+                   ]
+                 }
+               Add one entry to "comments" for every issue you found, each anchored to the
+               specific changed line it refers to. Only reference lines that appear in the diff.
+            5. If you found NO issues, skip the inline comments and instead post a single
+               general comment confirming the code looks fine:
+               `gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "<your review>"`
+            Always leave feedback on the PR. Do not skip the PR for being simple, automated, or already reviewed — always review and always comment.
+
+
+          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
+          # or https://code.claude.com/docs/en/cli-reference for available options
