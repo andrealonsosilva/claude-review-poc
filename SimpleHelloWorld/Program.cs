@@ -1,4 +1,6 @@
 using System.Data.SqlClient;
+using System.Security.Cryptography;
+using System.Text;
 
 Console.WriteLine("Hello, World!");
 
@@ -27,5 +29,15 @@ static int Divide(int total, int count)
     return total / count;
 }
 
+static string HashPassword(string password)
+{
+    // Weak cryptography: MD5 is broken and unsuitable for password hashing
+    // (fast, unsalted, collision-prone). Should use a slow, salted KDF.
+    using var md5 = MD5.Create();
+    var bytes = md5.ComputeHash(Encoding.UTF8.GetBytes(password));
+    return Convert.ToHexString(bytes);
+}
+
 Console.WriteLine($"Using API key {ApiKey}");
 Console.WriteLine(Divide(100, 0));
+Console.WriteLine(HashPassword("hunter2"));
