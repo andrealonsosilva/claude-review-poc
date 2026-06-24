@@ -46,7 +46,7 @@ jobs:
           echo "::group::caller identity"
           aws sts get-caller-identity || true
           echo "::endgroup::"
-          for MODEL in "us.anthropic.claude-sonnet-4-6" "us.anthropic.claude-haiku-4-5-20251001"; do
+          for MODEL in "us.anthropic.claude-haiku-4-5" "us.anthropic.claude-haiku-4-5-20251001-v1:0" "anthropic.claude-haiku-4-5"; do
             echo "::group::invoke-model $MODEL"
             aws bedrock-runtime invoke-model \
               --region us-east-1 \
