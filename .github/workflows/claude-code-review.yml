@@ -1,58 +1,31 @@
-name: Claude Code Review
+name: Claude PR Review
 
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
-    # Optional: Only run on specific file changes
-    # paths:
-    #   - "src/**/*.ts"
-    #   - "src/**/*.tsx"
-    #   - "src/**/*.js"
-    #   - "src/**/*.jsx"
+    types: [opened, synchronize]
+
+permissions:
+  id-token: write       # required for AWS OIDC
+  contents: read
+  pull-requests: write  # so Claude can comment on the PR
 
 jobs:
-  claude-review:
-    # Optional: Filter by PR author
-    # if: |
-    #   github.event.pull_request.user.login == 'external-contributor' ||
-    #   github.event.pull_request.user.login == 'new-developer' ||
-    #   github.event.pull_request.author_association == 'FIRST_TIME_CONTRIBUTOR'
-
+  review:
     runs-on: ubuntu-latest
-    permissions:
-      contents: read
-      pull-requests: write
-      issues: read
-      id-token: write
-
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 1
+      - uses: actions/checkout@v4
 
-      - name: Configure AWS credentials (OIDC)
+      - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::505474665010:role/gvp-code-review-role
-          aws-region: us-east-1
+          aws-region: us-east-1   # region where you enabled Bedrock
 
-      - name: Run Claude Code Review
-        id: claude-review
-        uses: anthropics/claude-code-action@v1
-        env:
-          CLAUDE_CODE_USE_BEDROCK: "1"
-          # Bedrock inference-profile IDs — confirm the exact IDs available in your region
-          # (Bedrock console → Inference / Cross-region inference profiles).
-          ANTHROPIC_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
-          ANTHROPIC_SMALL_FAST_MODEL: us.anthropic.claude-haiku-4-5-20251001-v1:0
+      - name: Run Claude review
+        uses: anthropics/claude-code-action@beta
         with:
-          # Use the action's first-class Bedrock support (OIDC -> IAM role for auth).
-          # Do NOT pass claude_code_oauth_token here: it switches the action to the
-          # Anthropic-API auth path, which conflicts with Bedrock and makes the first
-          # model call fail (is_error on turn 1, no review posted).
           use_bedrock: "true"
-          claude_args: '--allowed-tools "Bash(gh pr view:*),Bash(gh pr diff:*),Bash(gh pr comment:*),Bash(gh api:*)"'
+          model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # a Bedrock inference-profile ID
           prompt: |
             Review pull request #${{ github.event.pull_request.number }} in the repository ${{ github.repository }}.
 
