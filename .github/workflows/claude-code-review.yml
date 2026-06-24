@@ -25,35 +25,9 @@ jobs:
         uses: anthropics/claude-code-action@v1
         with:
           use_bedrock: "true"
-          claude_args: |
-            --model us.anthropic.claude-haiku-4-5-20251001-v1:0
-            --allowedTools Bash(gh:*),Edit,Write,View
+          model: "us.anthropic.claude-sonnet-4-5-20250929-v1:0"  # a Bedrock inference-profile ID
           prompt: |
-            Review pull request #${{ github.event.pull_request.number }} in the repository ${{ github.repository }}.
-
-            Steps:
-            1. Run `gh pr diff ${{ github.event.pull_request.number }} --repo ${{ github.repository }}` to see the changes.
-            2. Review the diff for bugs, security issues, and bad practices.
-            3. Get the head commit SHA of the PR (you will need it to anchor inline comments):
-               `gh pr view ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --json headRefOid -q .headRefOid`
-            4. Post your review as a single PR review with INLINE comments anchored to the
-               exact file and line of each issue. Build a JSON payload and submit it with the
-               GitHub reviews API. Write the payload to a file first, then run:
-               `gh api repos/${{ github.repository }}/pulls/${{ github.event.pull_request.number }}/reviews --method POST --input payload.json`
-               The payload must have this shape:
-                 {
-                   "commit_id": "<head SHA from step 3>",
-                   "event": "COMMENT",
-                   "body": "<short summary of the review>",
-                   "comments": [
-                     { "path": "<file path>", "line": <line number in the new file>, "side": "RIGHT", "body": "<the issue>" }
-                   ]
-                 }
-               Add one entry to "comments" for every issue you found, each anchored to the
-               specific changed line it refers to. Only reference lines that appear in the diff.
-            5. If you found NO issues, skip the inline comments and instead post a single
-               general comment confirming the code looks fine:
-               `gh pr comment ${{ github.event.pull_request.number }} --repo ${{ github.repository }} --body "<your review>"`
+            Review the diff and leave inline comments on the PR
             Always leave feedback on the PR. Do not skip the PR for being simple, automated, or already reviewed — always review and always comment.
 
 
